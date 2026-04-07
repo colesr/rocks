@@ -458,6 +458,121 @@
   #sysTag .dim { color: var(--dim); text-shadow: none; }
   #sysTag .ok { color: var(--neon-g); text-shadow: 0 0 6px var(--neon-g); }
 
+  /* ─── AUDIO PLAYER ─────────────────────────────────── */
+  .player-btn {
+    background: linear-gradient(180deg, rgba(10,20,32,0.9), rgba(3,8,16,0.9));
+    color: var(--neon-c);
+    border: 1px solid #163048;
+    width: 30px; height: 24px;
+    font-family: inherit;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-shadow: 0 0 6px var(--neon-c);
+    position: relative;
+    overflow: hidden;
+    clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
+  }
+  .player-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.4), transparent);
+    transform: translateX(-120%);
+    transition: transform 0.5s;
+  }
+  .player-btn:hover {
+    border-color: var(--neon-c);
+    background: linear-gradient(180deg, rgba(0, 240, 255, 0.15), rgba(0, 240, 255, 0.05));
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.5), inset 0 0 8px rgba(0, 240, 255, 0.15);
+  }
+  .player-btn:hover::before { transform: translateX(120%); }
+  .player-btn:active { transform: scale(0.92); }
+  .player-btn.playing {
+    border-color: var(--neon-g);
+    color: var(--neon-g);
+    text-shadow: 0 0 8px var(--neon-g);
+    box-shadow: 0 0 14px rgba(0, 255, 136, 0.55), inset 0 0 8px rgba(0, 255, 136, 0.2);
+    animation: flicker 5s infinite;
+  }
+
+  #trackDisplay {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(3, 8, 16, 0.78);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    border-left: 3px solid var(--neon-c);
+    padding: 4px 12px 4px 10px;
+    min-width: 240px;
+    height: 28px;
+    clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
+    position: relative;
+    overflow: hidden;
+  }
+  #trackDisplay::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--neon-c), transparent);
+    animation: scanSweep 6s linear infinite;
+  }
+  #trackMeta {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    overflow: hidden;
+  }
+  #trackName {
+    color: var(--neon-c);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-shadow: 0 0 6px var(--neon-c);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #trackSub {
+    color: var(--dim);
+    font-size: 7px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  #eqBars {
+    display: flex;
+    gap: 2px;
+    align-items: flex-end;
+    height: 16px;
+    width: 28px;
+  }
+  #eqBars span {
+    width: 4px;
+    background: var(--dim);
+    box-shadow: none;
+    height: 3px;
+    transition: all 0.1s;
+  }
+  #eqBars.playing span {
+    background: var(--neon-c);
+    box-shadow: 0 0 4px var(--neon-c);
+    animation: eqJump 0.7s ease-in-out infinite;
+  }
+  #eqBars.playing span:nth-child(1) { animation-delay: 0.00s; }
+  #eqBars.playing span:nth-child(2) { animation-delay: 0.13s; }
+  #eqBars.playing span:nth-child(3) { animation-delay: 0.27s; }
+  #eqBars.playing span:nth-child(4) { animation-delay: 0.40s; }
+  #eqBars.playing span:nth-child(5) { animation-delay: 0.53s; }
+  @keyframes eqJump {
+    0%, 100% { height: 3px; }
+    25%      { height: 14px; }
+    50%      { height: 6px; }
+    75%      { height: 16px; }
+  }
+
   #imageInput { display: none; }
 </style>
 </head>
@@ -489,6 +604,19 @@
   </div>
   <div class="row" id="toolRow"></div>
   <div class="row" id="modeRow"></div>
+  <div class="row" id="playerRow">
+    <label>Audio</label>
+    <button id="playerPrev" class="player-btn" title="Previous track">◂◂</button>
+    <button id="playerPlay" class="player-btn" title="Play / Pause">▶</button>
+    <button id="playerNext" class="player-btn" title="Next track">▸▸</button>
+    <div id="trackDisplay">
+      <div id="trackMeta">
+        <div id="trackName">— STANDBY —</div>
+        <div id="trackSub">SYNTH.GEN/v1</div>
+      </div>
+      <div id="eqBars"><span></span><span></span><span></span><span></span><span></span></div>
+    </div>
+  </div>
 </div>
 
 <canvas id="canvas"></canvas>
@@ -615,7 +743,6 @@ let stickyMode = false;
 let reflectMode = false;
 let constellationMode = false;
 let dayNightOn = true;
-let musicOn = false;
 let micOn = false;
 let multiOn = false;
 let portalA = null, portalB = null, portalNext = 'A';
@@ -640,7 +767,7 @@ function updateStatus() {
   if (stickyMode)        flags.push('▸ STICKY_MODE');
   if (reflectMode)       flags.push('▸ MIRROR_FX');
   if (constellationMode) flags.push('▸ CONSTELLATION');
-  if (musicOn)           flags.push('▸ AUDIO_OUT');
+  if (player && player.playing) flags.push('▸ AUDIO_OUT');
   if (micOn)             flags.push('▸ MIC_INPUT');
   if (multiOn)           flags.push('▸ NET_LINK');
   if (gravityDir < 0)    flags.push('▸ GRAV_INV');
@@ -695,7 +822,6 @@ const MODES = [
   { id: 'sticky',        label: '🧲 Sticky',        get: () => stickyMode,         toggle: () => stickyMode = !stickyMode },
   { id: 'reflect',       label: '🌊 Reflect',       get: () => reflectMode,        toggle: () => reflectMode = !reflectMode },
   { id: 'constellation', label: '✨ Constellation', get: () => constellationMode,  toggle: () => constellationMode = !constellationMode },
-  { id: 'music',         label: '🎵 Music',         get: () => musicOn,            toggle: () => { ensureAudio(); musicOn = !musicOn; } },
   { id: 'mic',           label: '🎤 Mic',           get: () => micOn,              toggle: () => enableMic() },
   { id: 'multi',         label: '👥 Multi',         get: () => multiOn,            toggle: () => { multiOn = !multiOn; if (multiOn) initMulti(); } },
   { id: 'image',         label: '🖼 Paint Image',   get: () => false,              toggle: () => document.getElementById('imageInput').click() },
@@ -1234,9 +1360,6 @@ function simulate() {
   // Multiplayer broadcast
   if (multiOn && frameNum % 6 === 0) broadcastCursor();
 
-  // Music level update
-  if (musicOn) updateDrone();
-
   if (stickyMode) {
     // No physics, but still update particles + creatures + bubbles + orbholes
   } else {
@@ -1548,51 +1671,383 @@ function getMicLevel() {
 }
 
 // ════════════════════════════════════════════════════════════════
-// MUSIC (procedural)
+// AUDIO ENGINE + GENERATIVE SOUNDTRACK PLAYER
 // ════════════════════════════════════════════════════════════════
 let audioCtx = null;
-let droneOsc = null, droneGain = null;
+let masterOut = null;     // global mix bus
+let playerBus = null;     // soundtrack bus (separate so we can fade it)
+let fxBus = null;         // chord stings on game events
+let delayNode = null;     // shared echo
+let delayFeedback = null;
+let delayWet = null;
+
 function ensureAudio() {
   if (audioCtx) return audioCtx;
   try {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    droneGain = audioCtx.createGain();
-    droneGain.gain.value = 0;
-    droneGain.connect(audioCtx.destination);
-    droneOsc = audioCtx.createOscillator();
-    droneOsc.type = 'sine';
-    droneOsc.frequency.value = 110;
-    droneOsc.connect(droneGain);
-    droneOsc.start();
+    masterOut = audioCtx.createGain();
+    masterOut.gain.value = 0.55;
+    masterOut.connect(audioCtx.destination);
+
+    playerBus = audioCtx.createGain();
+    playerBus.gain.value = 0;
+    playerBus.connect(masterOut);
+
+    fxBus = audioCtx.createGain();
+    fxBus.gain.value = 0.5;
+    fxBus.connect(masterOut);
+
+    // Shared echo (long minimalist tail)
+    delayNode = audioCtx.createDelay(2.0);
+    delayNode.delayTime.value = 0.42;
+    delayFeedback = audioCtx.createGain();
+    delayFeedback.gain.value = 0.45;
+    delayWet = audioCtx.createGain();
+    delayWet.gain.value = 0.35;
+    delayNode.connect(delayFeedback);
+    delayFeedback.connect(delayNode);
+    delayNode.connect(delayWet);
+    delayWet.connect(masterOut);
   } catch (e) {}
   return audioCtx;
 }
 function midiToFreq(m) { return 440 * Math.pow(2, (m - 69) / 12); }
-function playChord(rootMidi, intervals) {
-  if (!musicOn || !audioCtx) return;
-  const now = audioCtx.currentTime;
-  intervals.forEach((iv, i) => {
+
+// ─── voice synth used by every track ───────────────────
+function synthNote(when, midi, opts = {}) {
+  if (!audioCtx) return;
+  const {
+    type = 'sine',
+    dur = 1.0,
+    gain = 0.05,
+    attack = 0.02,
+    bus = playerBus,
+    cutoff = 1800,
+    sendDelay = 0.4,
+    detune = 0,
+  } = opts;
+  const freq = midiToFreq(midi);
+  const o = audioCtx.createOscillator();
+  o.type = type;
+  o.frequency.value = freq;
+  o.detune.value = detune;
+
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = cutoff;
+  filter.Q.value = 0.7;
+
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0, when);
+  g.gain.linearRampToValueAtTime(gain, when + attack);
+  g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
+
+  o.connect(filter);
+  filter.connect(g);
+  g.connect(bus);
+
+  // delay send
+  if (sendDelay > 0 && delayNode) {
+    const send = audioCtx.createGain();
+    send.gain.value = sendDelay;
+    g.connect(send);
+    send.connect(delayNode);
+  }
+  o.start(when);
+  o.stop(when + dur + 0.4);
+}
+
+// Bell-like additive voice (multiple detuned partials)
+function bellNote(when, midi, opts = {}) {
+  if (!audioCtx) return;
+  const { dur = 4, gain = 0.04, bus = playerBus } = opts;
+  const partials = [1, 2.01, 3.04, 4.16];
+  const partialGains = [1, 0.5, 0.3, 0.15];
+  partials.forEach((p, i) => {
     const o = audioCtx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = midiToFreq(midi) * p;
     const g = audioCtx.createGain();
-    o.type = 'triangle';
-    o.frequency.value = midiToFreq(rootMidi + iv);
-    g.gain.setValueAtTime(0, now);
-    g.gain.linearRampToValueAtTime(0.06, now + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+    g.gain.setValueAtTime(0, when);
+    g.gain.linearRampToValueAtTime(gain * partialGains[i], when + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001, when + dur);
     o.connect(g);
-    g.connect(audioCtx.destination);
-    o.start(now);
-    o.stop(now + 0.85);
+    g.connect(bus);
+    if (delayNode) {
+      const send = audioCtx.createGain();
+      send.gain.value = 0.3;
+      g.connect(send);
+      send.connect(delayNode);
+    }
+    o.start(when);
+    o.stop(when + dur + 0.2);
   });
 }
-function updateDrone() {
-  if (!audioCtx || !droneGain) return;
-  let count = 0;
-  for (let i = 0; i < grid.length; i += 16) if (grid[i]) count++;
-  const target = musicOn ? Math.min(0.05, count / 200 * 0.05) : 0;
-  droneGain.gain.setTargetAtTime(target, audioCtx.currentTime, 0.3);
-  if (droneOsc) droneOsc.frequency.setTargetAtTime(80 + (score % 200), audioCtx.currentTime, 1);
+
+// Event chord stings (used by explosions / matches)
+function playChord(rootMidi, intervals) {
+  if (!player.playing || !audioCtx) return;
+  const now = audioCtx.currentTime;
+  intervals.forEach((iv) => {
+    synthNote(now, rootMidi + iv, { type: 'triangle', dur: 0.9, gain: 0.05, attack: 0.01, bus: fxBus, cutoff: 2400, sendDelay: 0.5 });
+  });
 }
+
+// ─── SCALES ─────────────────────────────────────────────
+const SCALES = {
+  pentMinor: [0, 3, 5, 7, 10],
+  pentMajor: [0, 2, 4, 7, 9],
+  dorian:    [0, 2, 3, 5, 7, 9, 10],
+  lydian:    [0, 2, 4, 6, 7, 9, 11],
+  minor:     [0, 2, 3, 5, 7, 8, 10],
+};
+function scaleNote(scale, root, degree, octave = 0) {
+  const i = ((degree % scale.length) + scale.length) % scale.length;
+  return root + scale[i] + octave * 12;
+}
+const RND = (a, b) => a + Math.random() * (b - a);
+const PICK = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+// ─── TRACKS (generative minimalist pieces) ──────────────
+const TRACKS = [
+  {
+    name: 'NEON.DRIFT',
+    sub: 'AMBIENT/PAD',
+    bpm: 50,
+    init(s) { s.t = 0; s.melodyNote = 69; },
+    tick(s, when) {
+      const stepBeat = s.t % 4;
+      // Bass drone every 32 steps (one every ~10s)
+      if (s.t % 32 === 0) {
+        synthNote(when, 33, { type: 'sine', dur: 12, gain: 0.04, attack: 1.5, cutoff: 600, sendDelay: 0.3 });
+        synthNote(when, 45, { type: 'sine', dur: 12, gain: 0.03, attack: 1.5, cutoff: 800, sendDelay: 0.3 });
+      }
+      // Pad chord every 16 steps
+      if (s.t % 16 === 0) {
+        const root = 57; // A
+        [0, 7, 12].forEach((iv, i) => {
+          synthNote(when, root + iv, { type: 'triangle', dur: 6, gain: 0.025, attack: 0.8, cutoff: 1100, sendDelay: 0.4 });
+        });
+      }
+      // Sparse top voice random walk
+      if (stepBeat === 0 && Math.random() < 0.4) {
+        const step = PICK([-2, -1, -1, 1, 1, 2]);
+        s.melodyNote = Math.max(60, Math.min(84, scaleNote(SCALES.pentMinor, 69, Math.round(s.melodyNote - 69 + step))));
+        synthNote(when, s.melodyNote, { type: 'sine', dur: 2.5, gain: 0.035, attack: 0.05, cutoff: 2400, sendDelay: 0.55 });
+      }
+      s.t++;
+    },
+  },
+
+  {
+    name: 'GLASS.RAIN',
+    sub: 'PLUCK/LYDIAN',
+    bpm: 78,
+    init(s) { s.t = 0; },
+    tick(s, when) {
+      // Sparse glassy plucks descending the lydian scale
+      if (s.t % 2 === 0 && Math.random() < 0.45) {
+        const deg = PICK([7, 6, 5, 4, 3, 2, 1, 0, -1]);
+        const note = scaleNote(SCALES.lydian, 60, deg, 1);
+        synthNote(when, note, { type: 'triangle', dur: 1.8, gain: 0.045, attack: 0.005, cutoff: 3200, sendDelay: 0.6 });
+      }
+      // Occasional low fifth pulse
+      if (s.t % 16 === 0) {
+        synthNote(when, 36, { type: 'sine', dur: 3, gain: 0.04, attack: 0.05, cutoff: 500, sendDelay: 0.2 });
+      }
+      // Rare high sparkle
+      if (s.t % 8 === 4 && Math.random() < 0.3) {
+        const note = scaleNote(SCALES.lydian, 60, PICK([7, 9, 11, 14]), 2);
+        synthNote(when, note, { type: 'sine', dur: 1.0, gain: 0.025, attack: 0.001, cutoff: 5000, sendDelay: 0.7 });
+      }
+      s.t++;
+    },
+  },
+
+  {
+    name: 'HEX.PULSE',
+    sub: 'PHASE/MINIMAL',
+    bpm: 132,
+    init(s) {
+      s.t = 0;
+      // Two voices with slightly different patterns — Reich-style phasing
+      s.patternA = [0, 2, 4, 0, 7, 4, 2, 0];
+      s.patternB = [0, 2, 4, 0, 7, 4, 2, 0];
+      s.idxA = 0;
+      s.idxB = 0;
+      s.phaseSkip = 0;
+    },
+    tick(s, when) {
+      const root = 50; // D
+      // Voice A — locked to grid
+      const noteA = scaleNote(SCALES.dorian, root, s.patternA[s.idxA]);
+      synthNote(when, noteA, { type: 'square', dur: 0.25, gain: 0.025, attack: 0.005, cutoff: 1400, sendDelay: 0.3 });
+      s.idxA = (s.idxA + 1) % s.patternA.length;
+      // Voice B — drifts (skip a step every 16 ticks → phases out of A)
+      s.phaseSkip++;
+      if (s.phaseSkip < 16) {
+        const noteB = scaleNote(SCALES.dorian, root + 12, s.patternB[s.idxB]);
+        synthNote(when, noteB, { type: 'sine', dur: 0.3, gain: 0.022, attack: 0.005, cutoff: 2200, sendDelay: 0.4 });
+        s.idxB = (s.idxB + 1) % s.patternB.length;
+      } else {
+        s.phaseSkip = 0;
+      }
+      // Bass on the 1
+      if (s.t % 16 === 0) {
+        synthNote(when, root - 12, { type: 'sine', dur: 4, gain: 0.05, attack: 0.05, cutoff: 400, sendDelay: 0.2 });
+      }
+      s.t++;
+    },
+  },
+
+  {
+    name: 'VOID.RESONATOR',
+    sub: 'BELL/DRONE',
+    bpm: 40,
+    init(s) { s.t = 0; },
+    tick(s, when) {
+      // Deep drone every 64 steps
+      if (s.t % 64 === 0) {
+        synthNote(when, 30, { type: 'sine', dur: 30, gain: 0.05, attack: 3, cutoff: 400, sendDelay: 0.2 });
+        synthNote(when, 42, { type: 'sine', dur: 30, gain: 0.025, attack: 3, cutoff: 600, sendDelay: 0.2 });
+      }
+      // Bell tones, sparse
+      if (s.t % 4 === 0 && Math.random() < 0.35) {
+        const deg = PICK([0, 2, 3, 5, 7, 8, 10, 12, 14]);
+        bellNote(when, 54 + deg, { dur: 6, gain: 0.05 });
+      }
+      // Very high shimmer
+      if (Math.random() < 0.04) {
+        const n = scaleNote(SCALES.minor, 66, PICK([0, 2, 3, 5, 7]), 1);
+        synthNote(when, n, { type: 'sine', dur: 2, gain: 0.018, attack: 0.3, cutoff: 5000, sendDelay: 0.7 });
+      }
+      s.t++;
+    },
+  },
+
+  {
+    name: 'CIRCUITRY',
+    sub: 'SEQ/DORIAN',
+    bpm: 104,
+    init(s) { s.t = 0; },
+    tick(s, when) {
+      // 16th note marimba sequence with random gating
+      if (Math.random() < 0.55) {
+        const deg = PICK([0, 2, 3, 5, 7, 9, 10, 12, 14, 7, 0, 5]);
+        const note = scaleNote(SCALES.dorian, 50, deg);
+        synthNote(when, note, { type: 'triangle', dur: 0.4, gain: 0.035, attack: 0.003, cutoff: 2600, sendDelay: 0.35, detune: RND(-5, 5) });
+      }
+      // Bass on 1 and 9
+      if (s.t % 16 === 0 || s.t % 16 === 8) {
+        synthNote(when, 38, { type: 'sine', dur: 0.6, gain: 0.06, attack: 0.005, cutoff: 700, sendDelay: 0.15 });
+      }
+      // Pad on the 1
+      if (s.t % 32 === 0) {
+        [0, 7, 10].forEach(iv => synthNote(when, 50 + iv, { type: 'triangle', dur: 8, gain: 0.018, attack: 1, cutoff: 1200, sendDelay: 0.4 }));
+      }
+      s.t++;
+    },
+  },
+];
+
+// ─── PLAYER ─────────────────────────────────────────────
+const player = {
+  trackIdx: 0,
+  state: null,
+  playing: false,
+  nextStepTime: 0,
+  schedHandle: null,
+  stepDur: 0.125,
+};
+const playPauseBtn = document.getElementById('playerPlay');
+const prevBtn      = document.getElementById('playerPrev');
+const nextBtn      = document.getElementById('playerNext');
+const trackNameEl  = document.getElementById('trackName');
+const trackSubEl   = document.getElementById('trackSub');
+const eqBarsEl     = document.getElementById('eqBars');
+
+function updatePlayerUI() {
+  const track = TRACKS[player.trackIdx];
+  trackNameEl.textContent = `${String(player.trackIdx + 1).padStart(2, '0')} ▸ ${track.name}`;
+  trackSubEl.textContent = `${track.sub} · ${track.bpm} BPM`;
+  if (player.playing) {
+    playPauseBtn.textContent = '❚❚';
+    playPauseBtn.classList.add('playing');
+    eqBarsEl.classList.add('playing');
+  } else {
+    playPauseBtn.textContent = '▶';
+    playPauseBtn.classList.remove('playing');
+    eqBarsEl.classList.remove('playing');
+  }
+}
+
+function startPlayer() {
+  ensureAudio();
+  if (!audioCtx) return;
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  if (player.playing) return;
+  player.playing = true;
+  const track = TRACKS[player.trackIdx];
+  player.state = {};
+  track.init(player.state);
+  player.stepDur = 60 / track.bpm / 4; // 16th note
+  player.nextStepTime = audioCtx.currentTime + 0.1;
+  // Fade in player bus
+  playerBus.gain.cancelScheduledValues(audioCtx.currentTime);
+  playerBus.gain.setValueAtTime(playerBus.gain.value, audioCtx.currentTime);
+  playerBus.gain.linearRampToValueAtTime(0.7, audioCtx.currentTime + 0.4);
+  scheduleLoop();
+  player.schedHandle = setInterval(scheduleLoop, 60);
+  updatePlayerUI();
+}
+
+function pausePlayer() {
+  if (!player.playing) return;
+  player.playing = false;
+  if (player.schedHandle) { clearInterval(player.schedHandle); player.schedHandle = null; }
+  // Fade out so tails ring nicely
+  if (playerBus && audioCtx) {
+    playerBus.gain.cancelScheduledValues(audioCtx.currentTime);
+    playerBus.gain.setValueAtTime(playerBus.gain.value, audioCtx.currentTime);
+    playerBus.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+  }
+  updatePlayerUI();
+}
+
+function nextTrack() {
+  const wasPlaying = player.playing;
+  pausePlayer();
+  player.trackIdx = (player.trackIdx + 1) % TRACKS.length;
+  updatePlayerUI();
+  if (wasPlaying) setTimeout(startPlayer, 350);
+}
+function prevTrack() {
+  const wasPlaying = player.playing;
+  pausePlayer();
+  player.trackIdx = (player.trackIdx - 1 + TRACKS.length) % TRACKS.length;
+  updatePlayerUI();
+  if (wasPlaying) setTimeout(startPlayer, 350);
+}
+
+function scheduleLoop() {
+  if (!player.playing || !audioCtx) return;
+  const lookahead = 0.25;
+  const track = TRACKS[player.trackIdx];
+  while (player.nextStepTime < audioCtx.currentTime + lookahead) {
+    try { track.tick(player.state, player.nextStepTime); } catch (e) { console.warn(e); }
+    player.nextStepTime += player.stepDur;
+  }
+}
+
+playPauseBtn.addEventListener('click', () => {
+  if (player.playing) pausePlayer();
+  else startPlayer();
+});
+nextBtn.addEventListener('click', nextTrack);
+prevBtn.addEventListener('click', prevTrack);
+
+// Init UI label
+updatePlayerUI();
 
 // ════════════════════════════════════════════════════════════════
 // RENDER

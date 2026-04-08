@@ -6,9 +6,10 @@
 <title>Diamond Rain — Sandbox of Wonders</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@600;900&display=swap" rel="stylesheet">
 <style>
-  :root {
+  :root, body[data-theme="dark"] {
     --bg: #03050a;
     --panel: #060a14;
+    --panel-fade: rgba(3, 8, 16, 0.78);
     --border: #122236;
     --neon-c: #00f0ff;
     --neon-m: #ff00aa;
@@ -17,15 +18,41 @@
     --neon-r: #ff3060;
     --text: #b8e8ff;
     --dim: #3a5a74;
+    --glow-c: 0 0 8px var(--neon-c);
+    --glow-m: 0 0 8px var(--neon-m);
+    --glow-g: 0 0 8px var(--neon-g);
+    --glow-y: 0 0 12px var(--neon-y);
+    --scan-alpha: 0.035;
+    --vignette: rgba(0,0,0,0.7);
+    --bg-grad: radial-gradient(ellipse at top, #0a1828 0%, #03050a 60%) fixed;
+  }
+  body[data-theme="light"] {
+    --bg: #eef2f8;
+    --panel: #ffffff;
+    --panel-fade: rgba(255, 255, 255, 0.78);
+    --border: #c8d4e0;
+    --neon-c: #0099b8;
+    --neon-m: #c70076;
+    --neon-g: #009060;
+    --neon-y: #b07000;
+    --neon-r: #c02040;
+    --text: #122030;
+    --dim: #6a8090;
+    --glow-c: none;
+    --glow-m: none;
+    --glow-g: none;
+    --glow-y: none;
+    --scan-alpha: 0.018;
+    --vignette: rgba(140,160,180,0.25);
+    --bg-grad: radial-gradient(ellipse at top, #ffffff 0%, #dbe5f0 60%) fixed;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; }
   body {
-    background:
-      radial-gradient(ellipse at top, #0a1828 0%, #03050a 60%) fixed,
-      #03050a;
+    background: var(--bg-grad), var(--bg);
     color: var(--text);
+    transition: background 0.5s ease;
     font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
     display: flex;
     flex-direction: column;
@@ -43,8 +70,8 @@
     pointer-events: none;
     background: repeating-linear-gradient(
       0deg,
-      rgba(0, 240, 255, 0.035) 0px,
-      rgba(0, 240, 255, 0.035) 1px,
+      rgba(0, 240, 255, var(--scan-alpha)) 0px,
+      rgba(0, 240, 255, var(--scan-alpha)) 1px,
       transparent 1px,
       transparent 3px
     );
@@ -57,9 +84,11 @@
     position: fixed;
     inset: 0;
     pointer-events: none;
-    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.7) 100%);
+    background: radial-gradient(ellipse at center, transparent 55%, var(--vignette) 100%);
     z-index: 199;
+    transition: background 0.5s;
   }
+  body[data-theme="light"]::before { mix-blend-mode: multiply; }
 
   /* ─── TITLE BAR ─────────────────────────────────────── */
   #titleBar {
@@ -573,6 +602,56 @@
     75%      { height: 16px; }
   }
 
+  /* ─── THEME TOGGLE BUTTON ─────────────────────────── */
+  #themeToggle {
+    background: transparent;
+    border: 1px solid var(--neon-c);
+    color: var(--neon-c);
+    width: 22px; height: 22px;
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    text-shadow: var(--glow-c);
+    transition: all 0.3s ease;
+    margin-left: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+  #themeToggle:hover {
+    background: var(--neon-c);
+    color: var(--bg);
+    box-shadow: 0 0 14px var(--neon-c);
+    transform: rotate(180deg);
+  }
+  #themeToggle:active { transform: rotate(180deg) scale(0.92); }
+
+  /* ─── LIGHT MODE OVERRIDES (kill glows / soften) ───── */
+  body[data-theme="light"] #titleBar,
+  body[data-theme="light"] #toolbar,
+  body[data-theme="light"] #score,
+  body[data-theme="light"] #combo,
+  body[data-theme="light"] #status,
+  body[data-theme="light"] #info,
+  body[data-theme="light"] #sysTag,
+  body[data-theme="light"] #trackDisplay,
+  body[data-theme="light"] .tool-btn,
+  body[data-theme="light"] .tool-btn.active,
+  body[data-theme="light"] .tool-btn.toggle.on,
+  body[data-theme="light"] .player-btn,
+  body[data-theme="light"] .player-btn.playing,
+  body[data-theme="light"] #clearBtn {
+    text-shadow: none !important;
+    box-shadow: 0 1px 4px rgba(40, 60, 80, 0.12) !important;
+  }
+  body[data-theme="light"] #titleBar { background: linear-gradient(90deg, #ffffff, #f0f4fa, #ffffff); }
+  body[data-theme="light"] #toolbar  { background: linear-gradient(180deg, #ffffff 0%, #f4f7fb 100%); }
+  body[data-theme="light"] .glitch::before,
+  body[data-theme="light"] .glitch::after { text-shadow: none; }
+  body[data-theme="light"] canvas { filter: contrast(1.0) saturate(1.0); }
+
   #imageInput { display: none; }
 </style>
 </head>
@@ -586,6 +665,7 @@
     <span>FPS</span>: <span id="fps">--</span> &nbsp;|&nbsp;
     <span>CELLS</span>: <span id="cellCount">0</span>
     <span class="blink">&nbsp;█</span>
+    <button id="themeToggle" title="Toggle theme">◐</button>
   </span>
 </div>
 
@@ -748,6 +828,8 @@ let multiOn = false;
 let portalA = null, portalB = null, portalNext = 'A';
 let currentColor = 'diamond-clear';
 let tool = 'pour';
+let theme = localStorage.getItem('drTheme') || 'dark';
+document.body.dataset.theme = theme;
 
 const scoreEl = document.getElementById('score');
 const comboEl = document.getElementById('combo');
@@ -1680,6 +1762,8 @@ let fxBus = null;         // chord stings on game events
 let delayNode = null;     // shared echo
 let delayFeedback = null;
 let delayWet = null;
+let crackleSource = null; // vinyl noise loop
+let crackleGain = null;
 
 function ensureAudio() {
   if (audioCtx) return audioCtx;
@@ -1708,10 +1792,81 @@ function ensureAudio() {
     delayFeedback.connect(delayNode);
     delayNode.connect(delayWet);
     delayWet.connect(masterOut);
+
+    // ─── Vinyl crackle (continuous loop, gain controlled per-track) ───
+    const noiseLen = audioCtx.sampleRate * 4;
+    const noiseBuf = audioCtx.createBuffer(1, noiseLen, audioCtx.sampleRate);
+    const nd = noiseBuf.getChannelData(0);
+    for (let i = 0; i < noiseLen; i++) {
+      // sparse pops + low background hiss
+      nd[i] = Math.random() < 0.012
+        ? (Math.random() * 2 - 1) * 0.55
+        : (Math.random() * 2 - 1) * 0.035;
+    }
+    crackleSource = audioCtx.createBufferSource();
+    crackleSource.buffer = noiseBuf;
+    crackleSource.loop = true;
+    const crackleHP = audioCtx.createBiquadFilter();
+    crackleHP.type = 'highpass';
+    crackleHP.frequency.value = 1400;
+    const crackleLP = audioCtx.createBiquadFilter();
+    crackleLP.type = 'lowpass';
+    crackleLP.frequency.value = 6000;
+    crackleGain = audioCtx.createGain();
+    crackleGain.gain.value = 0;
+    crackleSource.connect(crackleHP);
+    crackleHP.connect(crackleLP);
+    crackleLP.connect(crackleGain);
+    crackleGain.connect(masterOut);
+    crackleSource.start();
   } catch (e) {}
   return audioCtx;
 }
+
+// ─── Lo-fi helpers ─────────────────────────────────────
+function tapeWobble() {
+  if (!audioCtx) return 0;
+  const t = audioCtx.currentTime;
+  return Math.sin(t * 0.6) * 12 + Math.sin(t * 1.7 + 1.3) * 6 + (Math.random() - 0.5) * 10;
+}
+function glitchStutter(when, midi, opts, count = 4, rate = 0.04) {
+  for (let i = 0; i < count; i++) {
+    synthNote(when + i * rate, midi, {
+      ...opts,
+      dur: rate * 0.85,
+      gain: (opts.gain || 0.04) * Math.pow(0.72, i),
+    });
+  }
+}
 function midiToFreq(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+
+// ─── BEAT REACTIVE SYSTEM ──────────────────────────────
+// Pulse events queued in audio time, drained each frame in clock time.
+const beat = { low: 0, mid: 0, high: 0 };
+const pulseQueue = [];
+function queuePulse(when, midi, gain) {
+  let bucket;
+  if (midi < 50)      bucket = { low: gain * 9,  mid: 0,         high: 0 };
+  else if (midi < 70) bucket = { low: gain * 1,  mid: gain * 6,  high: 0 };
+  else                bucket = { low: 0,         mid: gain * 1,  high: gain * 5 };
+  pulseQueue.push({ when, ...bucket });
+}
+function updateBeat() {
+  if (audioCtx) {
+    const t = audioCtx.currentTime;
+    for (let i = pulseQueue.length - 1; i >= 0; i--) {
+      if (pulseQueue[i].when <= t) {
+        beat.low  = Math.min(1.5, beat.low  + pulseQueue[i].low);
+        beat.mid  = Math.min(1.5, beat.mid  + pulseQueue[i].mid);
+        beat.high = Math.min(1.5, beat.high + pulseQueue[i].high);
+        pulseQueue.splice(i, 1);
+      }
+    }
+  }
+  beat.low  *= 0.93;
+  beat.mid  *= 0.88;
+  beat.high *= 0.82;
+}
 
 // ─── voice synth used by every track ───────────────────
 function synthNote(when, midi, opts = {}) {
@@ -1755,6 +1910,7 @@ function synthNote(when, midi, opts = {}) {
   }
   o.start(when);
   o.stop(when + dur + 0.4);
+  if (bus === playerBus) queuePulse(when, midi, gain);
 }
 
 // Bell-like additive voice (multiple detuned partials)
@@ -1782,6 +1938,7 @@ function bellNote(when, midi, opts = {}) {
     o.start(when);
     o.stop(when + dur + 0.2);
   });
+  if (bus === playerBus) queuePulse(when, midi, gain * 1.4);
 }
 
 // Event chord stings (used by explosions / matches)
@@ -1810,6 +1967,189 @@ const PICK = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 // ─── TRACKS (generative minimalist pieces) ──────────────
 const TRACKS = [
+  {
+    name: 'DECAY.LOOP',
+    sub: 'LO-FI/F MINOR',
+    bpm: 58,
+    crackle: 0.028,
+    init(s) { s.t = 0; s.pattern = [0, 3, 7, 5, 3, 0, -2, 3]; s.idx = 0; },
+    tick(s, when) {
+      // Repeating dreary minor loop with random dropouts and detuned wobble
+      if (s.t % 2 === 0) {
+        if (Math.random() < 0.82) {
+          const note = scaleNote(SCALES.minor, 53, s.pattern[s.idx]);
+          const opts = {
+            type: 'triangle',
+            dur: 0.7,
+            gain: 0.032,
+            attack: 0.015,
+            cutoff: 700 + Math.random() * 250,
+            sendDelay: 0.55,
+            detune: tapeWobble(),
+          };
+          if (Math.random() < 0.07) glitchStutter(when, note, opts, 3, 0.045);
+          else synthNote(when, note, opts);
+        }
+        s.idx = (s.idx + 1) % s.pattern.length;
+      }
+      // Low sub drone
+      if (s.t % 32 === 0) {
+        synthNote(when, 29, { type: 'sine', dur: 14, gain: 0.045, attack: 2, cutoff: 320, sendDelay: 0.2 });
+        synthNote(when, 41, { type: 'sine', dur: 14, gain: 0.025, attack: 2, cutoff: 480, sendDelay: 0.25 });
+      }
+      // Rare distant high voice
+      if (s.t % 24 === 0 && Math.random() < 0.4) {
+        synthNote(when, scaleNote(SCALES.minor, 65, PICK([0, 3, 5, 7])), {
+          type: 'sine', dur: 3, gain: 0.018, attack: 0.4, cutoff: 1400, sendDelay: 0.65, detune: tapeWobble(),
+        });
+      }
+      s.t++;
+    },
+  },
+
+  {
+    name: 'NULL.SECTOR',
+    sub: 'BLEAK/DRONE',
+    bpm: 42,
+    crackle: 0.042,
+    init(s) { s.t = 0; },
+    tick(s, when) {
+      // Heavy bleak drone in C# minor
+      if (s.t % 64 === 0) {
+        synthNote(when, 25, { type: 'sine', dur: 28, gain: 0.05, attack: 4, cutoff: 280, sendDelay: 0.2 });
+        synthNote(when, 37, { type: 'sine', dur: 28, gain: 0.028, attack: 4, cutoff: 380, sendDelay: 0.25 });
+        // dissonant minor 2nd shimmer underneath
+        synthNote(when, 38, { type: 'sine', dur: 28, gain: 0.012, attack: 5, cutoff: 420, sendDelay: 0.3 });
+      }
+      // Sparse dissonant top voice
+      if (s.t % 8 === 0 && Math.random() < 0.32) {
+        const deg = PICK([0, 1, 3, 6, 8, 10, 11]);
+        const note = 49 + deg;
+        synthNote(when, note, {
+          type: 'sine', dur: 4, gain: 0.022, attack: 0.5, cutoff: 1000, sendDelay: 0.6, detune: tapeWobble(),
+        });
+      }
+      // Rare glitch burst
+      if (Math.random() < 0.012) {
+        const n = 60 + Math.floor(Math.random() * 14);
+        glitchStutter(when, n, { type: 'square', dur: 0.15, gain: 0.018, cutoff: 850, sendDelay: 0.4 }, 4, 0.035);
+      }
+      s.t++;
+    },
+  },
+
+  {
+    name: 'GHOST.TAPE',
+    sub: 'BROKEN/ARP',
+    bpm: 68,
+    crackle: 0.032,
+    init(s) { s.t = 0; s.arp = [0, 3, 7, 10, 7, 3, 5, -2]; s.idx = 0; },
+    tick(s, when) {
+      // Broken minor arp with random pitch drops & wow/flutter
+      if (s.t % 2 === 0 && Math.random() < 0.72) {
+        let deg = s.arp[s.idx];
+        if (Math.random() < 0.13) deg -= 12; // octave drop glitch
+        const note = 47 + deg;
+        const opts = {
+          type: 'triangle',
+          dur: 0.55,
+          gain: 0.03,
+          attack: 0.005,
+          cutoff: 820,
+          sendDelay: 0.6,
+          detune: tapeWobble() + (Math.random() - 0.5) * 25,
+        };
+        if (Math.random() < 0.1) glitchStutter(when, note, opts, 3, 0.05);
+        else synthNote(when, note, opts);
+        s.idx = (s.idx + 1) % s.arp.length;
+      }
+      // Crawling sub
+      if (s.t % 16 === 0) {
+        synthNote(when, 35, { type: 'sine', dur: 8, gain: 0.045, attack: 0.5, cutoff: 360, sendDelay: 0.2 });
+      }
+      // Tape stop simulation: very rare full freeze
+      if (Math.random() < 0.003) {
+        const n = 60 + Math.floor(Math.random() * 12);
+        for (let i = 0; i < 6; i++) {
+          synthNote(when + i * 0.08, n - i * 2, {
+            type: 'sine', dur: 0.2, gain: 0.022 * (1 - i * 0.15), cutoff: 700, sendDelay: 0.5, detune: -i * 30,
+          });
+        }
+      }
+      s.t++;
+    },
+  },
+
+  {
+    name: 'SUBROUTINE.404',
+    sub: 'GLITCH/A MINOR',
+    bpm: 62,
+    crackle: 0.036,
+    init(s) { s.t = 0; },
+    tick(s, when) {
+      // Sparse marimba with random retriggers
+      if (Math.random() < 0.42) {
+        const deg = PICK([0, 2, 3, 5, 7, 8, 10, 12, -2, -4]);
+        const note = scaleNote(SCALES.minor, 57, deg);
+        const opts = {
+          type: 'triangle',
+          dur: 0.45,
+          gain: 0.028,
+          attack: 0.003,
+          cutoff: 1050,
+          sendDelay: 0.5,
+          detune: tapeWobble(),
+        };
+        if (Math.random() < 0.16) glitchStutter(when, note, opts, 5, 0.038);
+        else synthNote(when, note, opts);
+      }
+      // Glitch noise burst (high stuttering pip)
+      if (Math.random() < 0.022) {
+        const pip = 78 + Math.floor(Math.random() * 18);
+        synthNote(when, pip, {
+          type: 'square', dur: 0.05, gain: 0.014, attack: 0.001, cutoff: 1700, sendDelay: 0.2,
+        });
+      }
+      // Slow buried bass
+      if (s.t % 16 === 0) {
+        synthNote(when, 33, { type: 'sine', dur: 4, gain: 0.05, attack: 0.1, cutoff: 380, sendDelay: 0.2 });
+      }
+      // Pad whisper
+      if (s.t % 32 === 0) {
+        [0, 7, 10].forEach(iv => synthNote(when, 45 + iv, {
+          type: 'triangle', dur: 10, gain: 0.012, attack: 1.2, cutoff: 700, sendDelay: 0.45,
+        }));
+      }
+      s.t++;
+    },
+  },
+
+  {
+    name: 'SLEEPMODE',
+    sub: 'AMBIENT/F# MINOR',
+    bpm: 36,
+    crackle: 0.022,
+    init(s) { s.t = 0; },
+    tick(s, when) {
+      // Almost silent — extremely sparse
+      if (s.t % 64 === 0) {
+        synthNote(when, 30, { type: 'sine', dur: 32, gain: 0.045, attack: 6, cutoff: 260, sendDelay: 0.2 });
+        synthNote(when, 42, { type: 'sine', dur: 32, gain: 0.025, attack: 6, cutoff: 360, sendDelay: 0.25 });
+      }
+      // Distant bell, very rare
+      if (s.t % 16 === 0 && Math.random() < 0.28) {
+        const deg = PICK([0, 3, 7, 10, 12]);
+        bellNote(when, 54 + deg, { dur: 8, gain: 0.025 });
+      }
+      // Whisper-quiet glitch
+      if (Math.random() < 0.005) {
+        const n = 70 + Math.floor(Math.random() * 12);
+        glitchStutter(when, n, { type: 'sine', dur: 0.1, gain: 0.01, cutoff: 700, sendDelay: 0.4 }, 3, 0.06);
+      }
+      s.t++;
+    },
+  },
+
   {
     name: 'NEON.DRIFT',
     sub: 'AMBIENT/PAD',
@@ -1996,6 +2336,13 @@ function startPlayer() {
   playerBus.gain.cancelScheduledValues(audioCtx.currentTime);
   playerBus.gain.setValueAtTime(playerBus.gain.value, audioCtx.currentTime);
   playerBus.gain.linearRampToValueAtTime(0.7, audioCtx.currentTime + 0.4);
+  // Crackle level for this track
+  if (crackleGain) {
+    const target = track.crackle || 0;
+    crackleGain.gain.cancelScheduledValues(audioCtx.currentTime);
+    crackleGain.gain.setValueAtTime(crackleGain.gain.value, audioCtx.currentTime);
+    crackleGain.gain.linearRampToValueAtTime(target, audioCtx.currentTime + 0.6);
+  }
   scheduleLoop();
   player.schedHandle = setInterval(scheduleLoop, 60);
   updatePlayerUI();
@@ -2010,6 +2357,11 @@ function pausePlayer() {
     playerBus.gain.cancelScheduledValues(audioCtx.currentTime);
     playerBus.gain.setValueAtTime(playerBus.gain.value, audioCtx.currentTime);
     playerBus.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+  }
+  if (crackleGain && audioCtx) {
+    crackleGain.gain.cancelScheduledValues(audioCtx.currentTime);
+    crackleGain.gain.setValueAtTime(crackleGain.gain.value, audioCtx.currentTime);
+    crackleGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
   }
   updatePlayerUI();
 }
@@ -2045,6 +2397,13 @@ playPauseBtn.addEventListener('click', () => {
 });
 nextBtn.addEventListener('click', nextTrack);
 prevBtn.addEventListener('click', prevTrack);
+
+// Theme toggle
+document.getElementById('themeToggle').addEventListener('click', () => {
+  theme = (theme === 'dark') ? 'light' : 'dark';
+  document.body.dataset.theme = theme;
+  localStorage.setItem('drTheme', theme);
+});
 
 // Init UI label
 updatePlayerUI();
@@ -2170,20 +2529,89 @@ function drawCell(c, cell, x, y, time) {
 }
 
 function drawScene(c) {
-  // Background — day/night cycle
+  // Background — day/night cycle + beat reactive + theme aware
   const day = (Math.sin(nightT) + 1) / 2;
-  const r1 = 13 + day * 30, g1 = 13 + day * 50, b1 = 26 + day * 60;
-  const r2 = 26 + day * 30, g2 = 26 + day * 50, b2 = 46 + day * 60;
+  const isLight = theme === 'light';
+  let r1, g1, b1, r2, g2, b2;
+  if (isLight) {
+    // Soft, paper-pale background. Bass deepens it slightly.
+    r1 = 245 - beat.low * 30;  g1 = 248 - beat.low * 25;  b1 = 252 - beat.low * 18;
+    r2 = 230 - beat.low * 35;  g2 = 236 - beat.low * 30;  b2 = 244 - beat.low * 20;
+  } else {
+    r1 = 5  + day * 12 + beat.low * 22;
+    g1 = 8  + day * 22 + beat.low * 32;
+    b1 = 16 + day * 32 + beat.low * 50;
+    r2 = 10 + day * 18 + beat.low * 18;
+    g2 = 16 + day * 28 + beat.low * 28;
+    b2 = 28 + day * 38 + beat.low * 42;
+  }
   const bgGrad = c.createLinearGradient(0, 0, 0, canvas.height);
   if (gravityDir === 1) {
-    bgGrad.addColorStop(0, `rgb(${r1}, ${g1}, ${b1})`);
-    bgGrad.addColorStop(1, `rgb(${r2}, ${g2}, ${b2})`);
+    bgGrad.addColorStop(0, `rgb(${r1|0}, ${g1|0}, ${b1|0})`);
+    bgGrad.addColorStop(1, `rgb(${r2|0}, ${g2|0}, ${b2|0})`);
   } else {
-    bgGrad.addColorStop(0, `rgb(${r2}, ${g2}, ${b2})`);
-    bgGrad.addColorStop(1, `rgb(${r1}, ${g1}, ${b1})`);
+    bgGrad.addColorStop(0, `rgb(${r2|0}, ${g2|0}, ${b2|0})`);
+    bgGrad.addColorStop(1, `rgb(${r1|0}, ${g1|0}, ${b1|0})`);
   }
   c.fillStyle = bgGrad;
   c.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Beat radial pulse — breathes from center
+  if (beat.low > 0.04) {
+    const cx = canvas.width / 2, cy = canvas.height / 2;
+    const r = Math.max(canvas.width, canvas.height) * (0.25 + beat.low * 0.55);
+    const pg = c.createRadialGradient(cx, cy, 0, cx, cy, r);
+    const a = Math.min(0.55, beat.low * 0.55);
+    if (isLight) {
+      pg.addColorStop(0, `rgba(0, 153, 184, ${a * 0.35})`);
+      pg.addColorStop(1, 'rgba(0, 153, 184, 0)');
+    } else {
+      pg.addColorStop(0, `rgba(0, 240, 255, ${a * 0.45})`);
+      pg.addColorStop(0.6, `rgba(0, 120, 200, ${a * 0.15})`);
+      pg.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    }
+    c.fillStyle = pg;
+    c.fillRect(0, 0, canvas.width, canvas.height);
+  }
+  // Mid band — magenta wash
+  if (beat.mid > 0.04) {
+    c.fillStyle = isLight
+      ? `rgba(199, 0, 118, ${beat.mid * 0.04})`
+      : `rgba(255, 0, 170, ${beat.mid * 0.06})`;
+    c.fillRect(0, 0, canvas.width, canvas.height);
+  }
+  // High band — top edge flash
+  if (beat.high > 0.05) {
+    const a = Math.min(0.5, beat.high * 0.45);
+    const fg = c.createLinearGradient(0, 0, 0, 80);
+    fg.addColorStop(0, isLight ? `rgba(0, 144, 96, ${a * 0.5})` : `rgba(0, 255, 136, ${a * 0.55})`);
+    fg.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    c.fillStyle = fg;
+    c.fillRect(0, 0, canvas.width, 80);
+  }
+
+  // Subtle scan grid (always-on minimal tech overlay)
+  if (!isLight) {
+    c.strokeStyle = `rgba(0, 240, 255, ${0.025 + beat.low * 0.04})`;
+    c.lineWidth = 1;
+    const step = 80;
+    for (let x = 0; x < canvas.width; x += step) {
+      c.beginPath(); c.moveTo(x, 0); c.lineTo(x, canvas.height); c.stroke();
+    }
+    for (let y = 0; y < canvas.height; y += step) {
+      c.beginPath(); c.moveTo(0, y); c.lineTo(canvas.width, y); c.stroke();
+    }
+  } else {
+    c.strokeStyle = `rgba(0, 50, 80, ${0.04 + beat.low * 0.04})`;
+    c.lineWidth = 1;
+    const step = 80;
+    for (let x = 0; x < canvas.width; x += step) {
+      c.beginPath(); c.moveTo(x, 0); c.lineTo(x, canvas.height); c.stroke();
+    }
+    for (let y = 0; y < canvas.height; y += step) {
+      c.beginPath(); c.moveTo(0, y); c.lineTo(canvas.width, y); c.stroke();
+    }
+  }
 
   const time = performance.now() * 0.001;
 
@@ -2485,6 +2913,7 @@ function loop() {
     spawnDiamonds();
     simulate();
   }
+  updateBeat();
   render();
 
   // Slow-mo state change updates HUD flags

@@ -1,0 +1,6 @@
+.claude/
+.firebase/
+.firebaserc
+firebase.json
+.DS_Store
+Thumbs.db

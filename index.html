@@ -800,6 +800,7 @@ function makeFire()   { return { type: 'fire',   r: 255, g: 120, b: 30, life: 60
 function makeSand()   { return { type: 'sand',   r: 220 + Math.random() * 20 - 10, g: 200 + Math.random() * 20 - 10, b: 140 + Math.random() * 20 - 10 }; }
 function makeVine()   { return { type: 'vine',   r: 60, g: 160, b: 70, age: 0, energy: 30 }; }
 function makeRainbowVine() { return { type: 'rainbowvine', r: 255, g: 255, b: 255, rainbow: true, age: 0, energy: 30 }; }
+function makeChristPlant() { return { type: 'christplant', r: 140, g: 10, b: 10, age: 0, energy: 40 }; }
 function makePeg()    { return { type: 'peg',    r: 180, g: 180, b: 200 }; }
 function makeBelt(d)  { return { type: 'belt',   dir: d, r: 90, g: 90, b: 110 }; }
 
@@ -875,6 +876,7 @@ const TOOLS = [
   { id: 'sand',      label: '🏖 Sand' },
   { id: 'vine',      label: '🌱 Vine' },
   { id: 'rainbowvine', label: '🌈 Rainbow Plant' },
+  { id: 'christplant', label: '✝ Christ Plant' },
   { id: 'peg',       label: '⚪ Peg' },
   { id: 'beltL',     label: '⬅ Belt' },
   { id: 'beltR',     label: '➡ Belt' },
@@ -1274,6 +1276,7 @@ function spawnDiamonds() {
     case 'sand':       paintArea(mouseX, mouseY, makeSand); break;
     case 'vine':       paintArea(mouseX, mouseY, makeVine, 1); break;
     case 'rainbowvine': paintArea(mouseX, mouseY, makeRainbowVine, 1); break;
+    case 'christplant': paintArea(mouseX, mouseY, makeChristPlant, 1); break;
     case 'peg':        paintArea(mouseX, mouseY, makePeg, 1); break;
     case 'beltL':      paintArea(mouseX, mouseY, () => makeBelt(-1), 2); break;
     case 'beltR':      paintArea(mouseX, mouseY, () => makeBelt(1), 2); break;
@@ -1428,6 +1431,24 @@ function updateRainbowVine(x, y, cell) {
   }
 }
 
+function updateChristPlant(x, y, cell) {
+  cell.age++;
+  if (cell.energy <= 0 || cell.age < 25) return;
+  if (Math.random() < 0.06) {
+    const ny = y - gravityDir;
+    const candidates = [[x, ny], [x - 1, ny], [x + 1, ny], [x - 1, y], [x + 1, y]];
+    for (const [nx, nny] of candidates) {
+      if (!inBounds(nx, nny)) continue;
+      const nb = grid[idx(nx, nny)];
+      if (nb === null || (nb && nb.type === 'gem') || (nb && nb.type === 'rainbowvine')) {
+        grid[idx(nx, nny)] = makeChristPlant();
+        cell.energy--;
+        return;
+      }
+    }
+  }
+}
+
 function updateBelt(x, y, cell) {
   // Push the cell directly above (in gravity sense) sideways
   const ay = y - gravityDir; // cell sitting on top of this belt
@@ -1487,6 +1508,7 @@ function simulate() {
           case 'water': updateWater(x, y, cell); break;
           case 'vine':  updateVine(x, y, cell); break;
           case 'rainbowvine': updateRainbowVine(x, y, cell); break;
+          case 'christplant': updateChristPlant(x, y, cell); break;
           case 'belt':  updateBelt(x, y, cell); break;
           case 'ice': case 'peg': break;
         }
@@ -2526,6 +2548,24 @@ function drawCell(c, cell, x, y, time) {
     c.moveTo(px + 2, py + half); c.lineTo(px + CELL - 2, py + half);
     c.moveTo(px + half, py + 2); c.lineTo(px + half, py + CELL - 2);
     c.stroke();
+    return;
+  }
+  if (cell.type === 'christplant') {
+    const pulse = Math.sin(time * 3 + x * 7 + y * 11) * 0.15;
+    const br = Math.min(255, cell.r + 60 * pulse | 0);
+    const bg = Math.min(255, cell.g + 10 * pulse | 0);
+    const bb = Math.min(255, cell.b + 10 * pulse | 0);
+    // Dark bloody background
+    c.fillStyle = `rgb(${br * 0.3 | 0}, ${bg * 0.2 | 0}, ${bb * 0.2 | 0})`;
+    c.fillRect(px, py, CELL, CELL);
+    // Bloody cross
+    const armW = Math.max(1, CELL * 0.25);
+    c.fillStyle = `rgb(${br}, ${bg}, ${bb})`;
+    c.fillRect(px + (CELL - armW) / 2, py + 1, armW, CELL - 2);       // vertical
+    c.fillRect(px + 1, py + CELL * 0.25, CELL - 2, armW);             // horizontal
+    // Blood drip highlight
+    c.fillStyle = `rgba(200, 0, 0, ${0.3 + pulse * 0.5})`;
+    c.fillRect(px + (CELL - armW) / 2, py + CELL * 0.6, armW, CELL * 0.35);
     return;
   }
   if (cell.type === 'rainbowvine') {

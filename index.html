@@ -653,9 +653,202 @@
   body[data-theme="light"] canvas { filter: contrast(1.0) saturate(1.0); }
 
   #imageInput { display: none; }
+
+  /* ═══ CAMPAIGN MENU & CUTSCENE OVERLAY ═══ */
+  #menuOverlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: radial-gradient(ellipse at center, #080c18 0%, #020308 70%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-family: 'Orbitron', monospace; color: #b8e8ff;
+    transition: opacity 0.8s; overflow: hidden;
+  }
+  #menuOverlay.hidden { opacity: 0; pointer-events: none; }
+  #menuOverlay .menu-particles { position: absolute; inset: 0; pointer-events: none; }
+  #menuOverlay h1 {
+    font-size: clamp(2rem, 5vw, 4rem); font-weight: 900;
+    background: linear-gradient(90deg, #00f0ff, #ff00aa, #00ff88, #ffd000);
+    background-size: 300% 100%;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: menuShimmer 4s ease infinite;
+    text-shadow: none; margin-bottom: 0.3em; text-align: center;
+  }
+  @keyframes menuShimmer { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+  #menuOverlay .subtitle {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+    color: #3a5a74; margin-bottom: 2.5em; letter-spacing: 0.3em; text-align: center;
+  }
+  #menuOverlay .menu-btn {
+    display: block; width: 280px; padding: 16px 0; margin: 10px auto;
+    font-family: 'Orbitron', monospace; font-size: 1.1rem; font-weight: 600;
+    border: 1px solid #122236; border-radius: 4px;
+    cursor: pointer; transition: all 0.25s; text-transform: uppercase; letter-spacing: 0.15em;
+  }
+  #menuOverlay .menu-btn.sandbox {
+    background: linear-gradient(135deg, #0a1828, #122236); color: #00f0ff;
+  }
+  #menuOverlay .menu-btn.sandbox:hover {
+    background: linear-gradient(135deg, #122236, #1a3050); border-color: #00f0ff;
+    box-shadow: 0 0 20px rgba(0,240,255,0.3);
+  }
+  #menuOverlay .menu-btn.campaign {
+    background: linear-gradient(135deg, #1a0a0a, #2a1020); color: #ff3060;
+    border-color: #3a1020;
+  }
+  #menuOverlay .menu-btn.campaign:hover {
+    background: linear-gradient(135deg, #2a1020, #3a1535); border-color: #ff3060;
+    box-shadow: 0 0 20px rgba(255,48,96,0.3);
+  }
+  #menuOverlay .lore-text {
+    max-width: 500px; text-align: center; font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem; color: #2a4a64; margin-top: 2em; line-height: 1.7;
+  }
+
+  /* ═══ CUTSCENE OVERLAY ═══ */
+  #cutsceneOverlay {
+    position: fixed; inset: 0; z-index: 9998;
+    background: #000; display: none; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace; color: #b8e8ff;
+    overflow: hidden;
+  }
+  #cutsceneOverlay.active { display: flex; }
+  #cutsceneOverlay .cs-chapter {
+    font-family: 'Orbitron', monospace; font-size: 0.7rem;
+    color: #ff3060; letter-spacing: 0.4em; margin-bottom: 1em;
+    opacity: 0; transition: opacity 1s;
+  }
+  #cutsceneOverlay .cs-title {
+    font-family: 'Orbitron', monospace; font-size: clamp(1.5rem, 3.5vw, 2.5rem);
+    font-weight: 900; color: #fff; margin-bottom: 0.5em;
+    opacity: 0; transition: opacity 1.2s; text-align: center;
+  }
+  #cutsceneOverlay .cs-body {
+    max-width: 600px; text-align: center; font-size: 0.85rem;
+    line-height: 2; color: #6a8a9a; min-height: 120px;
+  }
+  #cutsceneOverlay .cs-body .cursor {
+    display: inline-block; width: 8px; height: 1em;
+    background: #ff3060; animation: blink 0.6s step-end infinite;
+    vertical-align: text-bottom; margin-left: 2px;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  #cutsceneOverlay .cs-prompt {
+    margin-top: 2em; font-size: 0.7rem; color: #2a4a64;
+    letter-spacing: 0.2em; opacity: 0; transition: opacity 0.8s;
+  }
+  #cutsceneOverlay .cs-vignette {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.8) 100%);
+  }
+  #cutsceneOverlay .cs-scanlines {
+    position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px);
+  }
+  #cutsceneOverlay canvas.cs-bg {
+    position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1;
+  }
+
+  /* ═══ CAMPAIGN HUD ═══ */
+  #campaignHud {
+    position: fixed; top: 40px; right: 12px; z-index: 200;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+    color: #b8e8ff; display: none; text-align: right;
+    pointer-events: none;
+  }
+  #campaignHud.active { display: block; }
+  #campaignHud .ch-level {
+    font-family: 'Orbitron', monospace; font-size: 0.65rem;
+    color: #ff3060; letter-spacing: 0.3em; margin-bottom: 4px;
+  }
+  #campaignHud .ch-objective {
+    color: #3a5a74; font-size: 0.7rem; margin-bottom: 6px;
+  }
+  #campaignHud .ch-bar-wrap {
+    width: 180px; height: 6px; background: #0a1828;
+    border: 1px solid #122236; border-radius: 3px;
+    overflow: hidden; margin-left: auto;
+  }
+  #campaignHud .ch-bar {
+    height: 100%; background: linear-gradient(90deg, #ff3060, #ff6040);
+    width: 0%; transition: width 0.4s;
+  }
+  #campaignHud .ch-hp-label {
+    color: #ff3060; font-size: 0.65rem; margin-top: 3px;
+  }
+
+  /* ═══ GAME OVER / VICTORY OVERLAY ═══ */
+  #campaignEndOverlay {
+    position: fixed; inset: 0; z-index: 9997;
+    background: rgba(0,0,0,0.85); display: none;
+    flex-direction: column; align-items: center; justify-content: center;
+    font-family: 'Orbitron', monospace;
+  }
+  #campaignEndOverlay.active { display: flex; }
+  #campaignEndOverlay .end-title {
+    font-size: clamp(2rem, 4vw, 3rem); font-weight: 900;
+    margin-bottom: 0.5em; text-align: center;
+  }
+  #campaignEndOverlay .end-title.victory { color: #00ff88; }
+  #campaignEndOverlay .end-title.defeat { color: #ff3060; }
+  #campaignEndOverlay .end-sub {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+    color: #6a8a9a; margin-bottom: 2em; text-align: center; max-width: 450px; line-height: 1.8;
+  }
+  #campaignEndOverlay .menu-btn {
+    display: block; width: 220px; padding: 14px 0; margin: 8px auto;
+    font-family: 'Orbitron', monospace; font-size: 0.9rem; font-weight: 600;
+    border: 1px solid #122236; border-radius: 4px;
+    background: linear-gradient(135deg, #0a1828, #122236); color: #00f0ff;
+    cursor: pointer; transition: all 0.25s; text-transform: uppercase; letter-spacing: 0.15em;
+  }
+  #campaignEndOverlay .menu-btn:hover {
+    border-color: #00f0ff; box-shadow: 0 0 20px rgba(0,240,255,0.3);
+  }
 </style>
 </head>
 <body>
+
+<!-- ═══ MAIN MENU ═══ -->
+<div id="menuOverlay">
+  <canvas class="menu-particles" id="menuCanvas"></canvas>
+  <h1>DIAMOND RAIN</h1>
+  <div class="subtitle">A PARTICLE CHRONICLE</div>
+  <button class="menu-btn sandbox" id="btnSandbox">Sandbox</button>
+  <button class="menu-btn campaign" id="btnCampaign">Campaign</button>
+  <div class="lore-text">
+    The Crystal Realm hangs in silence.<br>
+    Something stirs beneath the grid.<br>
+    The Void remembers.
+  </div>
+</div>
+
+<!-- ═══ CUTSCENE ═══ -->
+<div id="cutsceneOverlay">
+  <canvas class="cs-bg" id="csBgCanvas"></canvas>
+  <div class="cs-scanlines"></div>
+  <div class="cs-vignette"></div>
+  <div class="cs-chapter" id="csChapter"></div>
+  <div class="cs-title" id="csTitle"></div>
+  <div class="cs-body" id="csBody"></div>
+  <div class="cs-prompt" id="csPrompt">[ PRESS ANY KEY OR CLICK ]</div>
+</div>
+
+<!-- ═══ CAMPAIGN HUD ═══ -->
+<div id="campaignHud">
+  <div class="ch-level" id="chLevel"></div>
+  <div class="ch-objective" id="chObjective"></div>
+  <div class="ch-bar-wrap"><div class="ch-bar" id="chBar"></div></div>
+  <div class="ch-hp-label" id="chHpLabel"></div>
+</div>
+
+<!-- ═══ CAMPAIGN END ═══ -->
+<div id="campaignEndOverlay">
+  <div class="end-title" id="endTitle"></div>
+  <div class="end-sub" id="endSub"></div>
+  <button class="menu-btn" id="endNext">Continue</button>
+  <button class="menu-btn" id="endMenu">Main Menu</button>
+</div>
 
 <div id="titleBar">
   <span class="glitch" data-text="◆ DIAMOND.RAIN //">◆ DIAMOND.RAIN //</span>
@@ -1018,6 +1211,7 @@ function explodeAt(px, py, radiusPx) {
       if (dist > r) continue;
       const cell = grid[idx(x, y)];
       if (!cell) continue;
+      if (cell.type === 'corruption' && campaign.active) campaign.totalCleared++;
       grid[idx(x, y)] = null;
       const ang = Math.atan2(dy, dx) || (Math.random() * Math.PI * 2);
       const speed = (1 - dist / r) * 8 + 2;
@@ -1121,7 +1315,11 @@ function eraseArea(px, py, radius = 4) {
     for (let x = Math.max(0, Math.floor(cx - radius)); x < Math.min(cols, Math.ceil(cx + radius)); x++) {
       const dx = x - cx, dy = y - cy;
       if (dx * dx + dy * dy > radius * radius) continue;
-      if (inBounds(x, y)) grid[idx(x, y)] = null;
+      if (inBounds(x, y)) {
+        const ec = grid[idx(x, y)];
+        if (ec && ec.type === 'corruption' && campaign.active) campaign.totalCleared++;
+        grid[idx(x, y)] = null;
+      }
     }
   }
 }
@@ -1381,7 +1579,8 @@ function updateFire(x, y, cell) {
     const nb = grid[ni];
     if (!nb) continue;
     if (nb.type === 'ice') { grid[ni] = makeWater(); }
-    else if (nb.type === 'vine') { grid[ni] = makeFire(); }
+    else if (nb.type === 'vine' || nb.type === 'rainbowvine') { grid[ni] = makeFire(); }
+    else if (nb.type === 'corruption') { grid[ni] = makeFire(); campaign._spawnedSinceLast = (campaign._spawnedSinceLast || 0); campaign.totalCleared = (campaign.totalCleared || 0) + 1; }
     else if (nb.type === 'gem' && Math.random() < 0.005 && !nb.mega) { grid[ni] = makeFire(); }
   }
   // Rises (against gravity)
@@ -1509,6 +1708,7 @@ function simulate() {
           case 'vine':  updateVine(x, y, cell); break;
           case 'rainbowvine': updateRainbowVine(x, y, cell); break;
           case 'christplant': updateChristPlant(x, y, cell); break;
+          case 'corruption': updateCorruption(x, y, cell); break;
           case 'belt':  updateBelt(x, y, cell); break;
           case 'ice': case 'peg': break;
         }
@@ -2568,6 +2768,34 @@ function drawCell(c, cell, x, y, time) {
     c.fillRect(px + (CELL - armW) / 2, py + CELL * 0.6, armW, CELL * 0.35);
     return;
   }
+  if (cell.type === 'corruption') {
+    const pulse = Math.sin((cell.pulse || 0) + time * 4) * 0.3;
+    const v = cell.variant || 0;
+    const cr = Math.min(255, 50 + v * 25 + pulse * 40 | 0);
+    const cg = Math.min(255, 5 + pulse * 15 | 0);
+    const cb = Math.min(255, 35 + v * 12 + pulse * 30 | 0);
+    // Pulsing dark fill
+    c.fillStyle = `rgb(${cr}, ${cg}, ${cb})`;
+    c.fillRect(px, py, CELL, CELL);
+    // Corruption tendrils — jagged inner lines
+    c.strokeStyle = `rgba(${Math.min(255, cr + 80)}, ${cg}, ${Math.min(255, cb + 40)}, ${0.5 + pulse * 0.3})`;
+    c.lineWidth = 1;
+    c.beginPath();
+    const seed = (x * 73 + y * 137) & 0xff;
+    const a1 = seed * 0.1 + time * 2;
+    c.moveTo(cx + Math.cos(a1) * half * 0.7, cy + Math.sin(a1) * half * 0.7);
+    c.lineTo(cx - Math.cos(a1) * half * 0.7, cy - Math.sin(a1) * half * 0.7);
+    const a2 = a1 + 1.2;
+    c.moveTo(cx + Math.cos(a2) * half * 0.5, cy + Math.sin(a2) * half * 0.5);
+    c.lineTo(cx - Math.cos(a2) * half * 0.5, cy - Math.sin(a2) * half * 0.5);
+    c.stroke();
+    // Dark glow edge
+    c.fillStyle = `rgba(0, 0, 0, ${0.2 + pulse * 0.15})`;
+    c.beginPath();
+    c.arc(cx, cy, half * 0.4, 0, Math.PI * 2);
+    c.fill();
+    return;
+  }
   if (cell.type === 'rainbowvine') {
     const rc = rainbowColor(time, (x + y) * 20);
     c.fillStyle = `rgb(${rc[0]}, ${rc[1]}, ${rc[2]})`;
@@ -2851,6 +3079,23 @@ function drawScene(c) {
     c.textAlign = 'center';
     c.fillText('⏪ REWIND', canvas.width / 2, 130);
   }
+
+  // Campaign danger vignette
+  if (campaign.active && campaign.state === 'playing') {
+    const danger = 1 - campaign.playerHP / (campaign.level ? campaign.level.playerHP : 100);
+    if (danger > 0.1) {
+      const pulse = Math.sin(time * 3) * 0.1;
+      const a = Math.min(0.4, danger * 0.5 + pulse);
+      const vg = c.createRadialGradient(
+        canvas.width / 2, canvas.height / 2, canvas.width * 0.2,
+        canvas.width / 2, canvas.height / 2, canvas.width * 0.8
+      );
+      vg.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      vg.addColorStop(1, `rgba(120, 0, 20, ${a})`);
+      c.fillStyle = vg;
+      c.fillRect(0, 0, canvas.width, canvas.height);
+    }
+  }
 }
 
 function drawPortal(c, p, color, time) {
@@ -2973,6 +3218,791 @@ function render() {
 }
 
 // ════════════════════════════════════════════════════════════════
+// CAMPAIGN SYSTEM
+// ════════════════════════════════════════════════════════════════
+
+// --- Corruption cell type ---
+function makeCorruption(variant = 0) {
+  return {
+    type: 'corruption',
+    r: 40 + variant * 20, g: 5, b: 30 + variant * 10,
+    variant,
+    age: 0,
+    energy: 20 + variant * 8,
+    pulse: Math.random() * Math.PI * 2
+  };
+}
+
+function updateCorruption(x, y, cell) {
+  cell.age++;
+  cell.pulse += 0.05;
+  if (cell.energy <= 0 || cell.age < 20) return;
+  const rate = campaign.level ? (0.03 + campaign.level.aiAggression * 0.04) : 0.05;
+  if (Math.random() < rate) {
+    // Spread in all directions
+    const dirs = [[0,-1],[0,1],[-1,0],[1,0],[-1,-1],[1,-1],[-1,1],[1,1]];
+    const shuffled = dirs.sort(() => Math.random() - 0.5);
+    for (const [dx, dy] of shuffled) {
+      const nx = x + dx, ny = y + dy;
+      if (!inBounds(nx, ny)) continue;
+      const nb = grid[idx(nx, ny)];
+      // Can consume: empty, gems, sand, vines, rainbow vines
+      if (nb === null || (nb && (nb.type === 'gem' || nb.type === 'sand' ||
+          nb.type === 'vine' || nb.type === 'rainbowvine'))) {
+        grid[idx(nx, ny)] = makeCorruption(cell.variant);
+        cell.energy--;
+        return;
+      }
+    }
+  }
+}
+
+// --- Campaign state ---
+const campaign = {
+  active: false,
+  levelIndex: 0,
+  level: null,
+  state: 'menu',  // menu, cutscene, playing, victory, defeat, epilogue
+  corruptionCount: 0,
+  playerHP: 100,
+  aiSpawnTimer: 0,
+  aiSpawnPoints: [],
+  totalCleared: 0,
+  cutsceneQueue: [],
+  introPlayed: false,
+};
+
+// --- Level definitions ---
+const CAMPAIGN_LEVELS = [
+  {
+    id: 1,
+    chapter: 'CHAPTER I',
+    title: 'AWAKENING',
+    cutsceneLines: [
+      'For eons, the Crystal Realm drifted in perfect silence.',
+      'Gems fell like rain from nowhere. Creatures hatched from light.',
+      'No one remembers who built the grid. Only that it held everything together.',
+      'Then... the pulses began.',
+      'Deep beneath the lowest row, something was dreaming.',
+      'And when it woke, it was hungry.',
+    ],
+    objective: 'Destroy 80 corruption cells',
+    objectiveType: 'clear',
+    objectiveTarget: 80,
+    aiAggression: 0.3,
+    spawnRate: 180,    // frames between spawns
+    spawnCount: 1,     // corruption sources per spawn
+    maxCorruption: 120,
+    playerHP: 100,
+    tools: ['pour', 'bomb', 'fire', 'eraser'],
+    victoryLines: [
+      'The corruption recedes... but does not die.',
+      'You feel it beneath the grid — waiting, learning.',
+      'This was only a whisper.',
+    ],
+  },
+  {
+    id: 2,
+    chapter: 'CHAPTER II',
+    title: 'THE SPREADING',
+    cutsceneLines: [
+      'They called it the Void.',
+      'Not because it was empty — but because it made everything else empty.',
+      'The gems stopped singing. The creatures hid in corners.',
+      'And the Architect — you — stood alone at the edge of the grid.',
+      'The Void learned from its first defeat. It would not be gentle this time.',
+    ],
+    objective: 'Destroy 150 corruption cells',
+    objectiveType: 'clear',
+    objectiveTarget: 150,
+    aiAggression: 0.5,
+    spawnRate: 120,
+    spawnCount: 2,
+    maxCorruption: 200,
+    playerHP: 100,
+    tools: ['pour', 'bomb', 'fire', 'water', 'sand', 'eraser'],
+    victoryLines: [
+      'The grid shudders as the Void pulls back.',
+      'For a moment, you see something in the dark — a shape, almost human.',
+      'It was watching you. It has always been watching.',
+    ],
+  },
+  {
+    id: 3,
+    chapter: 'CHAPTER III',
+    title: 'DROWNING LIGHT',
+    cutsceneLines: [
+      'The oldest creatures tell stories of the time before the grid.',
+      'When there was only light, falling forever through nothing.',
+      'The Void was born from the first shadow that light cast upon itself.',
+      'It does not hate you. It does not feel anything.',
+      'It simply... consumes. Because that is what shadows do.',
+      'The water rises. The corruption adapts.',
+    ],
+    objective: 'Survive — keep corruption below 60%',
+    objectiveType: 'survive',
+    objectiveTarget: 3600, // 60 seconds at 60fps
+    aiAggression: 0.7,
+    spawnRate: 90,
+    spawnCount: 2,
+    maxCorruption: 350,
+    playerHP: 100,
+    tools: ['pour', 'bomb', 'fire', 'water', 'freeze', 'sand', 'vine', 'eraser'],
+    victoryLines: [
+      'The light holds. Barely.',
+      'You are exhausted. The grid is scarred but intact.',
+      'In the silence after the storm, you hear it breathing.',
+    ],
+  },
+  {
+    id: 4,
+    chapter: 'CHAPTER IV',
+    title: 'THE VINE WAR',
+    cutsceneLines: [
+      'You tried planting vines to reclaim the corrupted zones.',
+      'For a while, it worked. Green pushed back the dark.',
+      'Then the Void learned to grow.',
+      'Twisted, blackened tendrils — mockeries of your vines — ',
+      'erupted from the corruption, reaching for the sky.',
+      'The war for the grid became a war of roots.',
+      'And roots go deeper than anyone can see.',
+    ],
+    objective: 'Own more territory than corruption',
+    objectiveType: 'territory',
+    objectiveTarget: 0.5, // player must own > 50% of filled cells
+    aiAggression: 0.8,
+    spawnRate: 60,
+    spawnCount: 3,
+    maxCorruption: 500,
+    playerHP: 120,
+    tools: ['pour', 'bomb', 'fire', 'water', 'freeze', 'sand', 'vine', 'rainbowvine', 'christplant', 'eraser'],
+    victoryLines: [
+      'The vines intertwine — yours and the Void\'s — locked in an embrace.',
+      'You realize the corruption is not conquering. It is grieving.',
+      'It lost something, long ago. Something it cannot name.',
+      'And it has been screaming into the grid ever since.',
+    ],
+  },
+  {
+    id: 5,
+    chapter: 'FINAL CHAPTER',
+    title: 'HEART OF VOID',
+    cutsceneLines: [
+      'You descend.',
+      'Past the last row of the grid, past the boundary of the world itself.',
+      'The Void is not a monster. You see that now.',
+      'It is a mirror — reflecting every particle that ever fell and was forgotten.',
+      'Every gem that shattered. Every creature that faded. Every vine that withered.',
+      'The Void kept them all. In its own way... it was saving them.',
+      'But it held on too tight. And holding became consuming.',
+      'There is only one way to end this.',
+      'Not with destruction. With light.',
+      'Fill the darkness. Every corner. Every cell.',
+      'Show it that falling is not the same as being lost.',
+    ],
+    objective: 'Purify the grid — reduce corruption to zero',
+    objectiveType: 'purify',
+    objectiveTarget: 0,
+    aiAggression: 1.0,
+    spawnRate: 45,
+    spawnCount: 4,
+    maxCorruption: 800,
+    playerHP: 150,
+    tools: ['pour', 'bomb', 'fire', 'water', 'freeze', 'sand', 'vine', 'rainbowvine', 'christplant', 'midas', 'confetti', 'eraser'],
+    victoryLines: [
+      'The last corruption cell dissolves into light.',
+      'And in that light, you see them — every lost particle, every forgotten gem.',
+      'They fall upward, like rain in reverse, returning to wherever they came from.',
+      'The Void does not scream. It sighs.',
+      'And then... it lets go.',
+      '',
+      'The Crystal Realm is quiet again.',
+      'But this time, the silence is not empty.',
+      'It is full.',
+    ],
+  },
+];
+
+const CAMPAIGN_EPILOGUE = [
+  'You step back from the grid.',
+  'The gems fall. The creatures hatch. The vines grow.',
+  'Everything as it was. Everything as it should be.',
+  'Somewhere in the pattern of falling diamonds,',
+  'you think you see a shape — familiar, almost human —',
+  'dancing between the particles.',
+  '',
+  'The Void did not die. It became part of the rain.',
+  '',
+  'And the rain never stops.',
+  '',
+  '— END —',
+];
+
+// --- Cutscene engine ---
+const csChapterEl = document.getElementById('csChapter');
+const csTitle = document.getElementById('csTitle');
+const csBody = document.getElementById('csBody');
+const csPrompt = document.getElementById('csPrompt');
+const cutsceneOverlay = document.getElementById('cutsceneOverlay');
+const csBgCanvas = document.getElementById('csBgCanvas');
+const csBgCtx = csBgCanvas.getContext('2d');
+
+let csLineIndex = 0;
+let csCharIndex = 0;
+let csCurrentText = '';
+let csLines = [];
+let csTyping = false;
+let csTypeInterval = null;
+let csCallback = null;
+let csBgAnim = null;
+let csAudioStarted = false;
+
+function startCutscene(chapter, title, lines, callback) {
+  csLines = lines;
+  csLineIndex = 0;
+  csCharIndex = 0;
+  csCurrentText = '';
+  csCallback = callback;
+
+  cutsceneOverlay.classList.add('active');
+  csChapterEl.textContent = chapter;
+  csTitle.textContent = title;
+  csBody.innerHTML = '<span class="cursor"></span>';
+  csPrompt.style.opacity = '0';
+
+  // Fade in elements
+  setTimeout(() => { csChapterEl.style.opacity = '1'; }, 200);
+  setTimeout(() => { csTitle.style.opacity = '1'; }, 800);
+  setTimeout(() => { startTyping(); }, 1500);
+
+  // Start background animation
+  startCsBgAnim();
+
+  // Play dramatic audio
+  playCutsceneAudio();
+}
+
+function startTyping() {
+  if (csLineIndex >= csLines.length) {
+    csPrompt.style.opacity = '1';
+    csTyping = false;
+    return;
+  }
+  csTyping = true;
+  const line = csLines[csLineIndex];
+  csCharIndex = 0;
+
+  csTypeInterval = setInterval(() => {
+    if (csCharIndex < line.length) {
+      csCurrentText += line[csCharIndex];
+      csCharIndex++;
+      renderCsText();
+      // Typing sound
+      if (csCharIndex % 3 === 0) playCsKeystroke();
+    } else {
+      clearInterval(csTypeInterval);
+      csCurrentText += '\n';
+      csLineIndex++;
+      setTimeout(() => startTyping(), 600);
+    }
+  }, 35);
+}
+
+function renderCsText() {
+  const lines = csCurrentText.split('\n');
+  csBody.innerHTML = lines.map(l => l || '&nbsp;').join('<br>') + '<span class="cursor"></span>';
+}
+
+function advanceCutscene() {
+  if (csTyping) {
+    // Fast-forward current line
+    clearInterval(csTypeInterval);
+    csCurrentText += csLines[csLineIndex].slice(csCharIndex) + '\n';
+    csLineIndex++;
+    csCharIndex = 0;
+    renderCsText();
+    setTimeout(() => startTyping(), 100);
+    return;
+  }
+  // Cutscene complete — close
+  closeCutscene();
+}
+
+function closeCutscene() {
+  clearInterval(csTypeInterval);
+  cutsceneOverlay.classList.remove('active');
+  csChapterEl.style.opacity = '0';
+  csTitle.style.opacity = '0';
+  cancelAnimationFrame(csBgAnim);
+  if (csCallback) csCallback();
+}
+
+function startCsBgAnim() {
+  csBgCanvas.width = window.innerWidth;
+  csBgCanvas.height = window.innerHeight;
+  const c = csBgCtx;
+  const particles = [];
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      x: Math.random() * csBgCanvas.width,
+      y: Math.random() * csBgCanvas.height,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: Math.random() * 0.3 + 0.1,
+      size: Math.random() * 3 + 1,
+      hue: Math.random() * 360,
+      alpha: Math.random() * 0.4 + 0.1,
+    });
+  }
+  function animBg() {
+    c.fillStyle = 'rgba(0, 0, 0, 0.08)';
+    c.fillRect(0, 0, csBgCanvas.width, csBgCanvas.height);
+    const t = performance.now() * 0.001;
+    for (const p of particles) {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.hue += 0.5;
+      if (p.y > csBgCanvas.height) { p.y = 0; p.x = Math.random() * csBgCanvas.width; }
+      if (p.x < 0) p.x = csBgCanvas.width;
+      if (p.x > csBgCanvas.width) p.x = 0;
+      const r = campaign.state === 'epilogue' || (campaign.level && campaign.level.id === 5);
+      if (r) {
+        const rc = rainbowColor(t, p.x + p.y);
+        c.fillStyle = `rgba(${rc[0]},${rc[1]},${rc[2]},${p.alpha})`;
+      } else {
+        c.fillStyle = `rgba(${120 + Math.sin(p.hue * 0.02) * 60|0}, 10, ${60 + Math.cos(p.hue * 0.03) * 40|0}, ${p.alpha})`;
+      }
+      c.beginPath();
+      c.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      c.fill();
+    }
+    csBgAnim = requestAnimationFrame(animBg);
+  }
+  animBg();
+}
+
+// --- Cutscene audio ---
+function playCutsceneAudio() {
+  ensureAudio();
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime;
+  // Dark ambient pad
+  const isHope = campaign.state === 'epilogue' || (campaign.level && campaign.level.id === 5 && campaign.state === 'victory');
+  const root = isHope ? 60 : 36;
+  for (let i = 0; i < 4; i++) {
+    const t = now + i * 1.5;
+    const note = root + [0, 3, 7, 12][i];
+    synthNote(t, note, { type: 'sine', dur: 6, gain: 0.03, attack: 1.5, bus: fxBus, cutoff: 800, sendDelay: 0.6 });
+    bellNote(t + 0.5, note + 12, { dur: 5, gain: 0.015, bus: fxBus });
+  }
+  // Low rumble
+  if (!isHope) {
+    synthNote(now, 24, { type: 'sawtooth', dur: 8, gain: 0.02, attack: 2, bus: fxBus, cutoff: 200, sendDelay: 0.3 });
+  }
+}
+
+function playCsKeystroke() {
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime;
+  synthNote(now, 72 + Math.random() * 12, { type: 'square', dur: 0.03, gain: 0.008, attack: 0.002, bus: fxBus, cutoff: 3000, sendDelay: 0 });
+}
+
+// --- Campaign game logic ---
+function campaignStartLevel(index) {
+  campaign.levelIndex = index;
+  campaign.level = CAMPAIGN_LEVELS[index];
+  campaign.state = 'cutscene';
+  campaign.corruptionCount = 0;
+  campaign.totalCleared = 0;
+  campaign.playerHP = campaign.level.playerHP;
+  campaign.aiSpawnTimer = 0;
+  campaign.aiSpawnPoints = [];
+  campaign.surviveTimer = 0;
+
+  // Reset grid
+  grid.fill(null);
+  particles = []; creatures = []; orbHoles = []; bubbles = [];
+  portalA = null; portalB = null; portalNext = 'A';
+  score = 0;
+  scoreEl.textContent = 'SCORE: 0';
+
+  // Restrict tools
+  const allowedTools = campaign.level.tools;
+  Object.keys(toolBtns).forEach(id => {
+    toolBtns[id].style.display = allowedTools.includes(id) ? '' : 'none';
+  });
+  if (!allowedTools.includes(tool)) {
+    tool = allowedTools[0];
+    Object.values(toolBtns).forEach(b => b.classList.remove('active'));
+    if (toolBtns[tool]) toolBtns[tool].classList.add('active');
+  }
+
+  // Show cutscene
+  startCutscene(
+    campaign.level.chapter,
+    campaign.level.title,
+    campaign.level.cutsceneLines,
+    () => {
+      campaign.state = 'playing';
+      document.getElementById('campaignHud').classList.add('active');
+      updateCampaignHud();
+      // Auto-start music if not playing
+      if (!player.playing) {
+        const playBtn = document.getElementById('playerPlay');
+        if (playBtn) playBtn.click();
+      }
+    }
+  );
+}
+
+function campaignSpawnCorruption() {
+  if (campaign.state !== 'playing') return;
+  campaign.aiSpawnTimer++;
+  if (campaign.aiSpawnTimer < campaign.level.spawnRate) return;
+  campaign.aiSpawnTimer = 0;
+
+  // Count current corruption
+  let corruptCount = 0;
+  for (let i = 0; i < grid.length; i++) {
+    if (grid[i] && grid[i].type === 'corruption') corruptCount++;
+  }
+  campaign.corruptionCount = corruptCount;
+  if (corruptCount >= campaign.level.maxCorruption) return;
+
+  // Spawn from edges
+  for (let s = 0; s < campaign.level.spawnCount; s++) {
+    let sx, sy;
+    const edge = Math.floor(Math.random() * 4);
+    switch (edge) {
+      case 0: sx = Math.floor(Math.random() * cols); sy = 0; break;           // top
+      case 1: sx = Math.floor(Math.random() * cols); sy = rows - 1; break;    // bottom
+      case 2: sx = 0; sy = Math.floor(Math.random() * rows); break;           // left
+      case 3: sx = cols - 1; sy = Math.floor(Math.random() * rows); break;    // right
+    }
+    if (inBounds(sx, sy)) {
+      const existing = grid[idx(sx, sy)];
+      if (!existing || (existing.type !== 'corruption' && existing.type !== 'peg' &&
+          existing.type !== 'ice' && existing.type !== 'belt')) {
+        grid[idx(sx, sy)] = makeCorruption(campaign.level.id - 1);
+        // Spawn particles for drama
+        for (let p = 0; p < 5; p++) {
+          const ang = Math.random() * Math.PI * 2;
+          particles.push({
+            x: sx * CELL + CELL / 2,
+            y: sy * CELL + CELL / 2,
+            vx: Math.cos(ang) * 3,
+            vy: Math.sin(ang) * 3,
+            cell: { r: 180, g: 0, b: 60, rainbow: false },
+            life: 30 + Math.random() * 20,
+          });
+        }
+      }
+    }
+  }
+
+  // Play spawn sound
+  if (audioCtx) {
+    const now = audioCtx.currentTime;
+    synthNote(now, 30 + Math.random() * 6, { type: 'sawtooth', dur: 0.3, gain: 0.02, attack: 0.01, bus: fxBus, cutoff: 400, sendDelay: 0.2 });
+  }
+}
+
+function campaignCheckObjective() {
+  if (campaign.state !== 'playing') return;
+  const level = campaign.level;
+
+  // Count cells
+  let corruptCount = 0, playerCount = 0, totalFilled = 0;
+  for (let i = 0; i < grid.length; i++) {
+    const c = grid[i];
+    if (!c) continue;
+    totalFilled++;
+    if (c.type === 'corruption') corruptCount++;
+    else playerCount++;
+  }
+  campaign.corruptionCount = corruptCount;
+
+  // Corruption damage to player HP
+  const corruptPercent = corruptCount / (cols * rows);
+  if (corruptPercent > 0.6) {
+    campaign.playerHP -= 0.15;
+  }
+  if (corruptPercent > 0.8) {
+    campaign.playerHP -= 0.35;
+  }
+
+  // Defeat condition: HP reaches 0
+  if (campaign.playerHP <= 0) {
+    campaign.playerHP = 0;
+    campaignDefeat();
+    return;
+  }
+
+  // Check objective
+  switch (level.objectiveType) {
+    case 'clear': {
+      // Track corruption destroyed (cells that were corruption but are now gone)
+      const cleared = campaign._lastCorrupt ? Math.max(0, campaign._lastCorrupt - corruptCount + campaign._spawnedSinceLast) : 0;
+      campaign.totalCleared += cleared;
+      campaign._lastCorrupt = corruptCount;
+      campaign._spawnedSinceLast = 0;
+      if (campaign.totalCleared >= level.objectiveTarget) {
+        campaignVictory();
+        return;
+      }
+      break;
+    }
+    case 'survive': {
+      campaign.surviveTimer = (campaign.surviveTimer || 0) + 1;
+      if (campaign.surviveTimer >= level.objectiveTarget) {
+        campaignVictory();
+        return;
+      }
+      break;
+    }
+    case 'territory': {
+      if (totalFilled > 30 && playerCount / totalFilled > level.objectiveTarget) {
+        campaign.territoryHoldTimer = (campaign.territoryHoldTimer || 0) + 1;
+        if (campaign.territoryHoldTimer > 300) { // hold for 5 seconds
+          campaignVictory();
+          return;
+        }
+      } else {
+        campaign.territoryHoldTimer = 0;
+      }
+      break;
+    }
+    case 'purify': {
+      // Must have had corruption and cleared it all
+      if (campaign.totalCleared > 50 && corruptCount === 0) {
+        campaignVictory();
+        return;
+      }
+      // Track clears
+      const purgeCleared = campaign._lastCorrupt ? Math.max(0, campaign._lastCorrupt - corruptCount + campaign._spawnedSinceLast) : 0;
+      campaign.totalCleared += purgeCleared;
+      campaign._lastCorrupt = corruptCount;
+      campaign._spawnedSinceLast = 0;
+      break;
+    }
+  }
+
+  updateCampaignHud();
+}
+
+campaign._lastCorrupt = 0;
+campaign._spawnedSinceLast = 0;
+
+function updateCampaignHud() {
+  const level = campaign.level;
+  if (!level) return;
+  document.getElementById('chLevel').textContent = `${level.chapter} — ${level.title}`;
+  document.getElementById('chObjective').textContent = level.objective;
+
+  let progress = 0;
+  switch (level.objectiveType) {
+    case 'clear': case 'purify':
+      progress = Math.min(1, campaign.totalCleared / Math.max(1, level.objectiveTarget));
+      break;
+    case 'survive':
+      progress = Math.min(1, (campaign.surviveTimer || 0) / level.objectiveTarget);
+      break;
+    case 'territory':
+      progress = Math.min(1, (campaign.territoryHoldTimer || 0) / 300);
+      break;
+  }
+  document.getElementById('chBar').style.width = (progress * 100) + '%';
+  document.getElementById('chHpLabel').textContent = `INTEGRITY: ${Math.ceil(campaign.playerHP)}%`;
+}
+
+function campaignVictory() {
+  campaign.state = 'victory';
+  document.getElementById('campaignHud').classList.remove('active');
+
+  // Play victory sound
+  if (audioCtx) {
+    const now = audioCtx.currentTime;
+    [0, 4, 7, 12].forEach((iv, i) => {
+      bellNote(now + i * 0.3, 60 + iv, { dur: 4, gain: 0.04, bus: fxBus });
+    });
+  }
+
+  // Victory particles
+  for (let i = 0; i < 40; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const speed = 2 + Math.random() * 4;
+    particles.push({
+      x: canvas.width / 2, y: canvas.height / 2,
+      vx: Math.cos(ang) * speed, vy: Math.sin(ang) * speed - 2,
+      cell: makeGem('diamond-rainbow'),
+      life: 80 + Math.random() * 40,
+      firework: true,
+    });
+  }
+
+  // Show victory cutscene after a short delay
+  setTimeout(() => {
+    const isLastLevel = campaign.levelIndex >= CAMPAIGN_LEVELS.length - 1;
+    if (isLastLevel) {
+      startCutscene('', 'THE END', campaign.level.victoryLines.concat(['', ...CAMPAIGN_EPILOGUE]), () => {
+        showCampaignEnd(true, true);
+      });
+    } else {
+      startCutscene('VICTORY', campaign.level.title + ' — COMPLETE', campaign.level.victoryLines, () => {
+        showCampaignEnd(true, false);
+      });
+    }
+  }, 2000);
+}
+
+function campaignDefeat() {
+  campaign.state = 'defeat';
+  document.getElementById('campaignHud').classList.remove('active');
+
+  // Defeat sound
+  if (audioCtx) {
+    const now = audioCtx.currentTime;
+    synthNote(now, 30, { type: 'sawtooth', dur: 3, gain: 0.04, attack: 0.1, bus: fxBus, cutoff: 300, sendDelay: 0.5 });
+    synthNote(now + 0.5, 29, { type: 'sine', dur: 4, gain: 0.03, attack: 0.5, bus: fxBus, cutoff: 200, sendDelay: 0.4 });
+  }
+
+  // Screen shake
+  shakeFrames = 30;
+
+  setTimeout(() => {
+    showCampaignEnd(false, false);
+  }, 1500);
+}
+
+function showCampaignEnd(isVictory, isFinal) {
+  const overlay = document.getElementById('campaignEndOverlay');
+  const titleEl = document.getElementById('endTitle');
+  const subEl = document.getElementById('endSub');
+  const nextBtn = document.getElementById('endNext');
+  const menuBtn = document.getElementById('endMenu');
+
+  overlay.classList.add('active');
+  titleEl.className = 'end-title ' + (isVictory ? 'victory' : 'defeat');
+
+  if (isFinal) {
+    titleEl.textContent = 'THE CRYSTAL REALM IS SAVED';
+    subEl.textContent = 'The Void has become part of the rain. The Architect\'s work is done. But the grid will always need you.';
+    nextBtn.style.display = 'none';
+  } else if (isVictory) {
+    titleEl.textContent = 'LEVEL COMPLETE';
+    subEl.textContent = `${campaign.level.title} — cleared. The corruption retreats, but darkness gathers for the next assault.`;
+    nextBtn.style.display = '';
+    nextBtn.textContent = 'Next Chapter';
+  } else {
+    titleEl.textContent = 'THE GRID FALLS';
+    subEl.textContent = 'The corruption has consumed the realm. But the Architect does not surrender. Rise again.';
+    nextBtn.style.display = '';
+    nextBtn.textContent = 'Retry';
+  }
+
+  nextBtn.onclick = () => {
+    overlay.classList.remove('active');
+    if (isVictory) {
+      campaignStartLevel(campaign.levelIndex + 1);
+    } else {
+      campaignStartLevel(campaign.levelIndex);
+    }
+  };
+  menuBtn.onclick = () => {
+    overlay.classList.remove('active');
+    campaignReturnToMenu();
+  };
+}
+
+function campaignReturnToMenu() {
+  campaign.active = false;
+  campaign.state = 'menu';
+  campaign.level = null;
+  document.getElementById('campaignHud').classList.remove('active');
+  document.getElementById('campaignEndOverlay').classList.remove('active');
+  // Show all tools again
+  Object.keys(toolBtns).forEach(id => { toolBtns[id].style.display = ''; });
+  // Reset grid
+  grid.fill(null);
+  particles = []; creatures = []; orbHoles = []; bubbles = [];
+  score = 0; scoreEl.textContent = 'SCORE: 0';
+  // Show menu
+  document.getElementById('menuOverlay').classList.remove('hidden');
+}
+
+// --- Menu logic ---
+const menuOverlay = document.getElementById('menuOverlay');
+const menuCanvas = document.getElementById('menuCanvas');
+const menuCtx = menuCanvas.getContext('2d');
+let menuAnim = null;
+
+function startMenuAnim() {
+  menuCanvas.width = window.innerWidth;
+  menuCanvas.height = window.innerHeight;
+  const mParticles = [];
+  for (let i = 0; i < 80; i++) {
+    mParticles.push({
+      x: Math.random() * menuCanvas.width,
+      y: Math.random() * menuCanvas.height,
+      vy: 0.3 + Math.random() * 0.7,
+      size: 2 + Math.random() * 4,
+      hue: Math.random() * 360,
+    });
+  }
+  function animMenu() {
+    menuCtx.fillStyle = 'rgba(8, 12, 24, 0.1)';
+    menuCtx.fillRect(0, 0, menuCanvas.width, menuCanvas.height);
+    const t = performance.now() * 0.001;
+    for (const p of mParticles) {
+      p.y += p.vy;
+      p.hue += 0.3;
+      if (p.y > menuCanvas.height + 10) { p.y = -10; p.x = Math.random() * menuCanvas.width; }
+      const rc = rainbowColor(t * 0.5, p.hue);
+      menuCtx.fillStyle = `rgba(${rc[0]},${rc[1]},${rc[2]},0.25)`;
+      // Diamond shape
+      menuCtx.save();
+      menuCtx.translate(p.x, p.y);
+      menuCtx.rotate(Math.PI / 4);
+      menuCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+      menuCtx.restore();
+    }
+    menuAnim = requestAnimationFrame(animMenu);
+  }
+  animMenu();
+}
+startMenuAnim();
+
+document.getElementById('btnSandbox').addEventListener('click', () => {
+  cancelAnimationFrame(menuAnim);
+  menuOverlay.classList.add('hidden');
+  campaign.active = false;
+  campaign.state = 'menu';
+  // Show all tools
+  Object.keys(toolBtns).forEach(id => { toolBtns[id].style.display = ''; });
+  ensureAudio();
+});
+
+document.getElementById('btnCampaign').addEventListener('click', () => {
+  cancelAnimationFrame(menuAnim);
+  menuOverlay.classList.add('hidden');
+  campaign.active = true;
+  ensureAudio();
+  campaignStartLevel(0);
+});
+
+// Cutscene click/key to advance
+cutsceneOverlay.addEventListener('click', () => advanceCutscene());
+document.addEventListener('keydown', (e) => {
+  if (cutsceneOverlay.classList.contains('active')) {
+    advanceCutscene();
+    e.preventDefault();
+  }
+});
+
+// --- Corruption rendering (injected into drawCell) ---
+// We need to add corruption to the physics dispatcher and rendering.
+// This is handled by patching into the existing switch/if chains.
+
+// ════════════════════════════════════════════════════════════════
 // LOOP
 // ════════════════════════════════════════════════════════════════
 let tickToggle = 0;
@@ -2982,6 +4012,14 @@ const fpsEl = document.getElementById('fps');
 const cellCountEl = document.getElementById('cellCount');
 
 function loop() {
+  // Campaign cutscene/end — still render but don't simulate
+  if (campaign.state === 'cutscene' || campaign.state === 'victory' || campaign.state === 'defeat') {
+    updateBeat();
+    render();
+    requestAnimationFrame(loop);
+    return;
+  }
+
   if (keys['Shift']) {
     tickToggle++;
     if (tickToggle % 3 === 0) { spawnDiamonds(); simulate(); }
@@ -2989,6 +4027,13 @@ function loop() {
     spawnDiamonds();
     simulate();
   }
+
+  // Campaign logic
+  if (campaign.active && campaign.state === 'playing') {
+    campaignSpawnCorruption();
+    campaignCheckObjective();
+  }
+
   updateBeat();
   render();
 
